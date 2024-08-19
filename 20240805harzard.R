@@ -1,9 +1,10 @@
 rm(list = ls(all = TRUE))
-n = 600 # sample size
+n = 50 # sample size
 N = 1
-alpha.n = 1/seq(1:n)
+alpha.n = (1/seq(1:n))^2
 XN = matrix(NA,n,N)
 for (j in 1:N) {
+set.seed(j+3)
   y <- rnorm((n+1), mean = 0, sd = 1)
   x <- c()
   for (i in 1:n) {
@@ -31,19 +32,24 @@ f4 <- function(h, t, e){
   res = length(which( (t-h) < e & e<= (t+h)))/(2*length(e)*h)
 }
 
-hn <- c(n^{-1/2}, n^{-1/3}, n^{-1/5}) # bandwidth
+hn <- c(n^{-1/3}, n^{-1/4}*(log(n))^{1/4}, n^{-1/6}) # bandwidth
 t = seq(-3, 3, by = 0.01)
 m = length(t)
-Fhat = matrix(NA, m, 3)
-for (l in 1:3){
+lh <- length(hn)
+Fhatm = matrix(NA, m, lh)
+for (l in 1:lh) {
+Fhat = matrix(NA, m, N)
+for (j in 1:N){
   Fhat.temp = c()
   for (i in 1:m){
     Fhat.temp[i] <- f1(h=hn[l], t=t[i], e= XN[,j])
   }
-  Fhat[,l] = Fhat.temp
+  Fhat[,j] = Fhat.temp
+}
+Fhatm[,l] <- apply(Fhat, 1, mean)
 }
 
-Fn = matrix(NA, m, 1)
+Fn = matrix(NA, m, N)
 for (j in 1:N){
   Ft.temp = c()
   for (i in 1:m){
@@ -51,17 +57,29 @@ for (j in 1:N){
   }
   Fn[,j]= Ft.temp
 }
+Fnm <- apply(Fn, 1, mean)
 # par(mar=c(1,1,1,1))   # 设置边距参数
 
-fhat = matrix(NA, m, 3)
-for (l in 1:3){
-  fhat.temp = c()
-  for (i in 1:m){
-    fhat.temp[i] <- f3(h=hn[l], t=t[i], e= XN[,j])
+
+t = seq(-3, 3, by = 0.01)
+m = length(t)
+hn <- c(n^{-1/3}, n^{-1/4}*(log(n))^{1/4}, n^{-1/6}) #*(log(n))^{1/4}
+lh <- length(hn)
+fhatm = matrix(NA, m, lh)
+for (l in 1:lh) {
+  fhat = matrix(NA, m, N)
+  for (j in 1:N){
+    fhat.temp = c()
+    for (i in 1:m){
+      fhat.temp[i] <- f3(h=hn[l], t=t[i], e = XN[,j])
+    }
+    fhat[,j] = fhat.temp
   }
-  fhat[,l] = fhat.temp
+  fhatm[,l] <- apply(fhat, 1, mean)
 }
-fn <- matrix(NA, m, 1)
+
+
+fn = matrix(NA, m, N)
 for (j in 1:N){
   ft.temp = c()
   for (i in 1:m){
@@ -69,32 +87,29 @@ for (j in 1:N){
   }
   fn[,j]= ft.temp
 }
+fnm <- apply(fn, 1, mean)
+
 # par(mar=c(1,1,1,1))  # 设置边距参数
 
-
-rn <- fn[,1]/(1 - Fn[,1])
-rhat <- matrix(NA, m, 3)
-for (l in 1:3){
-  rhat[,l] <- fhat[,l]/(1 - Fhat[,l])
+rnm <- fnm/(1 - Fnm)
+rhatm <- matrix(NA, m, lh)
+for (l in 1:lh){
+  rhatm[,l] <- fhatm[,l]/(1 - Fhatm[,l])
 }
-
 
 ####  plot  ####
 rf <- function(t){
 #  t=0
   out <- dnorm(t, mean = 0, sd = 1)/(1 - pnorm(t, mean = 0, sd = 1))
 }
-length(rn)
-length(t)
-length(fn)
-length(Fn[,1])
 
-plot(t, rhat[,1], xlab = "x", ylab = "harzard function", ylim = c(0, 4), type = "n")
-lines(t, rhat[,1], lwd=2, col="limegreen",lty=4)
-lines(t, rhat[,2], lwd=2, col="blue",lty=2)
-lines(t, rhat[,3], lwd=3, col="purple",lty=3)
-lines(t, rn, lwd=2, col="red",lty=5)
+
+plot(t, rhatm[,1], xlab = "x", ylab = "harzard function", ylim = c(0, 4), type = "n")
+lines(t, rhatm[,1], lwd=2, col="limegreen",lty=4)
+lines(t, rhatm[,2], lwd=2, col="blue",lty=2)
+lines(t, rhatm[,3], lwd=3, col="purple",lty=3)
+lines(t, rnm, lwd=2, col="red",lty=5)
 curve(rf, add = T, lwd=3, col= "black", lty=1)
-legend("topleft", c(expression(h[n]==n^{-1/2}), expression(h[n]==n^{-1/3}), 
-                     expression(h[n]==n^{-1/5}), expression(r[n](x)), "r(x)"), 
+legend("topleft", c(expression(hat(r)[n](x)(h[n]==n^{-1/3})), expression(hat(r)[n](x)(h[n]==n^{-1/4}*(log(n))^{1/4})), 
+                       expression(hat(r)[n](x)(h[n]==n^{-1/6})), expression(r[n](x)(h[n]==n^{-1/4}*(log(n))^{1/4})), "r(x)"), 
        col = c("limegreen","blue","purple","red","black"), lty = c(4,2,3,5,1), lwd=c(2,2,3,2,3))
