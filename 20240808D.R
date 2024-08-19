@@ -1,4 +1,4 @@
-rm(list = ls(all = TRUE))
+rm(list = ls(all = TRUE))  ## remove (almost) everything in the working environment.
 #################################################################
 ############# compute index D(F) for Table 1 ####################
 #################################################################
