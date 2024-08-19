@@ -1,4 +1,4 @@
-rm(list = ls(all = TRUE))
+rm(list = ls(all = TRUE)) ## remove (almost) everything in the working environment.
 n = 50 # sample size
 N = 1
 alpha.n = (1/seq(1:n))^2
@@ -58,7 +58,7 @@ for (j in 1:N){
   Fn[,j]= Ft.temp
 }
 Fnm <- apply(Fn, 1, mean)
-# par(mar=c(1,1,1,1))   # 设置边距参数
+# par(mar=c(1,1,1,1))  
 
 
 t = seq(-3, 3, by = 0.01)
@@ -89,8 +89,7 @@ for (j in 1:N){
 }
 fnm <- apply(fn, 1, mean)
 
-# par(mar=c(1,1,1,1))  # 设置边距参数
-
+# par(mar=c(1,1,1,1)) 
 rnm <- fnm/(1 - Fnm)
 rhatm <- matrix(NA, m, lh)
 for (l in 1:lh){
